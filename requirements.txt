@@ -1,0 +1,15 @@
+# Core ML dependencies (XGBoost + SHAP + pymoo for NSGA-II)
+joblib>=1.3
+xgboost>=2.0
+scikit-learn>=1.3
+shap>=0.44
+pymoo>=0.6
+
+# Web UIs
+streamlit>=1.30
+
+# Optional LLM tool-calling layer
+openai>=2.0
+
+# Visualisation
+matplotlib>=3.7

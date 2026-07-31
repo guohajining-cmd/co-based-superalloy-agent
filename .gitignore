@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Local configuration and secrets
+.env
+.env.*
+.DS_Store
+
+# Generated artifacts and local scratch files
+tmp/
+output/
+*.zip
+
+# Manuscript drafts are kept local unless explicitly approved for release.
+A-25-4588(1).pdf
+docs/paper_agent_paragraph.md
+
+# Keep the GitHub repository focused on the runnable Agent package.
+# Raw collaborator scripts and side notes stay local; only runtime model/data
+# files required by the Agent are tracked below.
+Agent-acta/*
+!Agent-acta/
+!Agent-acta/OXIDATION.csv
+!Agent-acta/YSA-All-元素-微观-增强 -特征筛选-12 - 副本.csv
+!Agent-acta/xgboost_mass_gain_model.pkl
+!Agent-acta/xgboost_ys_元素_微观_增强_特征筛选_12_model.pkl
+
+/NSGA-2-双目标 - 副本.py
+/Oxi-SHAP蜂群图-Oxidation - 副本.py
+/Oxi_SHAP_特征重要性-Oxidation - 副本.py
+/XGBoost_Oxidation_Predict - 副本.py
+/XGBoost_YS_Predict-副本.py
+/YS-SHAP蜂群图-元素-微观-YS - 副本.py
+/YS_SHAP_特征重要性-YS.py

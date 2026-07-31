@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>钴基高温合金设计 Agent</title>
+  <style>
+    :root {__BRACE_OPEN__
+      color-scheme: light;
+      --ink: #18202b;
+      --muted: #5d6675;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --surface: #f6f8fb;
+      --accent: #245a7a;
+      --accent-dark: #173e57;
+      --ok: #17633a;
+    __BRACE_CLOSE__}
+    * {__BRACE_OPEN__ box-sizing: border-box; __BRACE_CLOSE__}
+    body {__BRACE_OPEN__
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background: var(--surface);
+    __BRACE_CLOSE__}
+    header {__BRACE_OPEN__
+      padding: 22px 28px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    __BRACE_CLOSE__}
+    h1 {__BRACE_OPEN__
+      margin: 0 0 6px;
+      font-size: 24px;
+      letter-spacing: 0;
+    __BRACE_CLOSE__}
+    .subtitle {__BRACE_OPEN__
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    __BRACE_CLOSE__}
+    main {__BRACE_OPEN__
+      display: grid;
+      grid-template-columns: minmax(340px, 0.9fr) minmax(380px, 1.1fr);
+      gap: 18px;
+      padding: 18px 28px 28px;
+    __BRACE_CLOSE__}
+    section {__BRACE_OPEN__
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+    __BRACE_CLOSE__}
+    h2 {__BRACE_OPEN__
+      margin: 0 0 10px;
+      font-size: 17px;
+    __BRACE_CLOSE__}
+    .note {__BRACE_OPEN__
+      margin: 0 0 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 14px;
+    __BRACE_CLOSE__}
+    .actions {__BRACE_OPEN__
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    __BRACE_CLOSE__}
+    button {__BRACE_OPEN__
+      border: 0;
+      border-radius: 6px;
+      padding: 10px 14px;
+      color: #fff;
+      background: var(--accent);
+      cursor: pointer;
+      font-weight: 650;
+    __BRACE_CLOSE__}
+    button:hover {__BRACE_OPEN__ background: var(--accent-dark); __BRACE_CLOSE__}
+    textarea {__BRACE_OPEN__
+      width: 100%;
+      min-height: 360px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 12px;
+      font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: var(--ink);
+      background: #fbfcfe;
+    __BRACE_CLOSE__}
+    .result {__BRACE_OPEN__
+      white-space: pre-wrap;
+      min-height: 360px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 14px;
+      line-height: 1.55;
+      background: #fbfcfe;
+    __BRACE_CLOSE__}
+    .status {__BRACE_OPEN__
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    __BRACE_CLOSE__}
+    .status.ok {__BRACE_OPEN__ color: var(--ok); __BRACE_CLOSE__}
+    @media (max-width: 900px) {__BRACE_OPEN__
+      main {__BRACE_OPEN__ grid-template-columns: 1fr; padding: 14px; __BRACE_CLOSE__}
+      header {__BRACE_OPEN__ padding: 18px 14px 14px; __BRACE_CLOSE__}
+    __BRACE_CLOSE__}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>钴基高温合金设计 Agent</h1>
+    <p class="subtitle">当前为 Agent 编排层展示版:底层工具使用 mock 输出,用于验证 XGBoost、SHAP、符号回归、NSGA-II 与报告生成流程可以被串联。</p>
+  </header>
+  <main>
+    <section>
+      <h2>功能入口</h2>
+      <p class="note">选择一个明确入口运行流程,不新增任务类型判断模型。左侧 JSON 可以直接编辑。</p>
+      <div class="actions">
+        <button type="button" onclick="runEvaluate()">评估已有合金</button>
+        <button type="button" onclick="runOptimize()">优化设计新合金</button>
+        <button type="button" onclick="runFull()">完整分析(评估 + 优化)</button>
+        <button type="button" onclick="runCurrent()">运行当前输入</button>
+      </div>
+      <textarea id="payload" spellcheck="false"></textarea>
+      <div id="inputStatus" class="status">已加载默认评估输入。</div>
+    </section>
+    <section>
+      <h2>运行结果</h2>
+      <p class="note">报告中会明确标记 mock 或论文示例结果,避免误认为已接入真实模型。</p>
+      <div id="report" class="result">点击"运行当前输入"后显示报告。</div>
+      <div id="resultStatus" class="status"></div>
+    </section>
+  </main>
+  <script>
+    const evaluatePayload = $evaluate_json;
+    const optimizePayload = $optimize_json;
+    const fullPayload = $full_json;
+
+    function pretty(value) {
+      return JSON.stringify(value, null, 2);
+    }
+
+    function loadEvaluate() {
+      document.getElementById("payload").value = pretty(evaluatePayload);
+      document.getElementById("inputStatus").textContent = "已加载:评估已有合金。";
+    }
+
+    function runEvaluate() {
+      loadEvaluate();
+    }
+
+    function loadOptimize() {
+      document.getElementById("payload").value = pretty(optimizePayload);
+      document.getElementById("inputStatus").textContent = "已加载:优化设计新合金。";
+    }
+
+    function runOptimize() {
+      loadOptimize();
+    }
+
+    function loadFull() {
+      document.getElementById("payload").value = pretty(fullPayload);
+      document.getElementById("inputStatus").textContent = "已加载:完整分析(评估 + 优化)。";
+    }
+
+    function runFull() {
+      loadFull();
+    }
+
+    async function runCurrent() {
+      const report = document.getElementById("report");
+      const status = document.getElementById("resultStatus");
+      status.className = "status";
+      status.textContent = "运行中...";
+      try {
+        const payload = JSON.parse(document.getElementById("payload").value);
+        const response = await fetch("/api/agent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || "请求失败");
+        }
+        report.textContent = data.report + "\n\n结构化结果:\n" + pretty(data.result);
+        status.className = "status ok";
+        status.textContent = "运行完成。";
+      } catch (error) {
+        report.textContent = "输入或运行错误:\n" + error.message;
+        status.textContent = "运行失败。";
+      }
+    }
+
+    loadEvaluate();
+  </script>
+</body>
+</html>
